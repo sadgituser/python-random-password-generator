@@ -1,20 +1,31 @@
 # Python Random Password Generator
 
-A customizable random password generator made with Python and Tkinter.
+A customizable desktop password generator built using Python and Tkinter.
+
+
+## Screenshots
+
+![Screenshot of the password gen screen](photo1.png)
+![Screenshot of the password gen with a password on](photo2.png)
+![Sceenshot of the password gen settings](photo3.png)
+
 
 ## Usage
 
-Run `password_generator.py` with Python. Open **Settings > Password Generation
-Settings** to choose the password length and character types, then select
-**Generate Password**. The main window displays the generated password.
+Launch `password_generator.exe`. Go to **Settings > Password Generation Settings** to configure your password length, character options, or add a custom word/phrase to include. Click **Generate Password** to create one. If your custom phrase exceeds the chosen length, the password will automatically expand to fit it. You can copy the generated password straight to your clipboard with the **Copy** button.
 
-Settings are saved automatically when the settings window or application
-closes. **Save Settings** saves them immediately. Use **Options > Save
-Configuration** and **Options > Open Configuration** to export or import a
-JSON configuration.
+Your settings save automatically whenever you close the app or the settings window, though you can also force an immediate save via **Save Settings**. To back up or load specific setups, use **Options > Save Configuration** and **Options > Open Configuration** to export or import your settings as a JSON file.
 
-The automatic settings file is stored in
-`%APPDATA%\PasswordGenerator\settings.json` on Windows, or in a
-`PasswordGenerator` directory under the user's home folder on other platforms.
+## Appearance
+
+Head to **Settings > Password Generation Settings** under the **Appearance** section to customize the interface. You can pick from built-in color themes (Forest, Ocean, Matrix), toggle between Light and Dark modes, or manually set custom colors for the background, text, accents, and buttons. Enabling **Gentle rainbow accent** slowly rotates through soft accent colors across key elements like the generated password display. For better accessibility, you can also switch to **Large** or **Extra large** text size.
+
+Custom themes and UI choices are saved alongside your general preferences and included in JSON config exports. Older settings files remain compatible and will fall back to default values for any new options.
+
+### Custom Window Icons
+The app comes with built-in icons for the main window (key) and settings window (gear). To use custom icons, update `ROOT_ICON_PATH` and `SETTINGS_ICON_PATH` near the top of `password_generator.py` with your image paths (PNG, GIF, or any format supported by Tkinter's `PhotoImage`). Relative paths resolve relative to the script directory.
+
+### Storage Location
+Settings are saved automatically to `%APPDATA%\PasswordGenerator\settings.json` on Windows, or within a `PasswordGenerator` folder in your user home directory on Linux and macOS.
 
 Made for the [Terra](terra.hackclub.com) project.
