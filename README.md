@@ -5,9 +5,17 @@ A customizable desktop password generator built using Python and Tkinter.
 
 ## Screenshots
 
-![Screenshot of the password gen screen](Assets\photo1.png)
-![Screenshot of the password gen with a password on](Assets\photo2.png)
-![Sceenshot of the password gen settings](Assets\photo3.png)
+First Screenshot:
+![Screenshot of the Password Generation App screen](/Assets/photo1.png)
+
+Second Screenshot:
+![Screenshot of the Password Generation App with a Password on](/Assets/photo2.png)
+
+Third Screenshot:
+![Sceenshot of the Password Generation App Settings](/Assets/photo3.png)
+
+Fourth Screenshot:
+![Screenshotof the About Me page](/Assets/photo4.png)
 
 
 ## Usage
