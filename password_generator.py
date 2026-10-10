@@ -4,7 +4,6 @@ import os
 import random
 import tkinter as tk
 from pathlib import Path
-import playsound
 from tkinter import colorchooser, filedialog, messagebox
 from webbrowser import open_new_tab
 
@@ -287,10 +286,13 @@ def main():
     text_size_variable = tk.StringVar(value=initial_settings["text_size"])
 
     settings_window = None
+    about_window = None
     password_label = None
+    about_heading = None
     font_widgets = []
     theme_menus = []
     rainbow_after_id = None
+    password_animation_after_id = None
     rainbow_index = 0
 
     def register_font(widget, size, family="IBM Plex Mono"):
@@ -314,6 +316,13 @@ def main():
             settings_window.geometry(
                 f"520x{heights[text_size_variable.get()]}"
             )
+        if about_window is not None and about_window.winfo_exists():
+            dimensions = {
+                "Standard": "520x480",
+                "Large": "590x540",
+                "Extra large": "650x600",
+            }
+            about_window.geometry(dimensions[text_size_variable.get()])
 
     def apply_theme():
         accent = accent_color_variable.get()
@@ -334,7 +343,7 @@ def main():
                 elif widget_class == "Label":
                     foreground = (
                         colors["accent"]
-                        if widget is password_label
+                        if widget in (password_label, about_heading)
                         else colors["text"]
                     )
                     widget.configure(
@@ -383,6 +392,9 @@ def main():
         style_children(root)
         if settings_window is not None and settings_window.winfo_exists():
             settings_window.configure(bg=colors["background"])
+        if about_window is not None and about_window.winfo_exists():
+            about_window.configure(bg=colors["background"])
+            style_children(about_window)
         for menu_widget in theme_menus:
             menu_widget.configure(
                 bg=colors["surface"],
@@ -458,7 +470,7 @@ def main():
     generated_password = tk.StringVar()
     password_label = register_font(tk.Label(
         main_frame,
-        text="Open Settings to choose password options.",
+        text="Click Generate Password to get started.",
         bg="#000000",
         font=("IBM Plex Mono", 14),
         wraplength=460,
@@ -496,25 +508,66 @@ def main():
     copy_button.grid(row=1, column=1, padx=(12, 0))
 
     def generate_password():
-        generated_password.set(
-            genpass(
-                length_variable.get(),
-                uppercase_variable.get(),
-                numbers_variable.get(),
-                special_variable.get(),
-                memorable_text_variable.get(),
-            )
+        nonlocal password_animation_after_id
+        password = genpass(
+            length_variable.get(),
+            uppercase_variable.get(),
+            numbers_variable.get(),
+            special_variable.get(),
+            memorable_text_variable.get(),
         )
-        password_label.configure(textvariable=generated_password)
-        copy_button.configure(state=tk.NORMAL)
+        animation_characters = (
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "0123456789!@#$%^&*"
+        )
+        animation_frames = random.randint(0, 100)
+        animation_frame = 0
 
-    register_font(tk.Button(
+        copy_button.configure(state=tk.DISABLED)
+        generate_button.configure(state=tk.DISABLED)
+        password_label.configure(textvariable=generated_password)
+
+        def animate_password():
+            nonlocal animation_frame, password_animation_after_id
+            animation_frame += 1
+            revealed_characters = (
+                len(password) * animation_frame // animation_frames
+            )
+            generated_password.set(
+                password[:revealed_characters]
+                + "".join(
+                    random.choice(animation_characters)
+                    for _ in range(len(password) - revealed_characters)
+                )
+            )
+
+            if animation_frame == animation_frames:
+                generated_password.set(password)
+                copy_button.configure(state=tk.NORMAL)
+                generate_button.configure(state=tk.NORMAL)
+                password_animation_after_id = None
+            else:
+                password_animation_after_id = root.after(
+                    50,
+                    animate_password,
+                )
+
+        animate_password()
+
+    generate_button = register_font(tk.Button(
         main_frame,
         text="Generate Password",
         command=generate_password,
         bg="#000000",
         font=("IBM Plex Mono", 12),
-    ), 12).grid(row=2, column=0, columnspan=2, sticky="ew", pady=(16, 0))
+    ), 12)
+    generate_button.grid(
+        row=2,
+        column=0,
+        columnspan=2,
+        sticky="ew",
+        pady=(16, 0),
+    )
 
     apply_saved_theme()
     apply_text_size()
@@ -832,17 +885,99 @@ def main():
         command=show_settings,
     )
 
+    def infopage():
+        nonlocal about_window, about_heading
+        if about_window is not None and about_window.winfo_exists():
+            about_window.lift()
+            about_window.focus_set()
+            return
+
+        about_window = tk.Toplevel(root)
+        about_window.title("About Me")
+        about_window.geometry("520x480+50+50")
+        about_window.minsize(400, 360)
+        about_window.transient(root)
+        about_window.columnconfigure(0, weight=1)
+        about_window.rowconfigure(0, weight=1)
+        about_window.protocol(
+            "WM_DELETE_WINDOW",
+            close_about_page,
+        )
+
+        about_frame = tk.Frame(about_window, padx=28, pady=24)
+        about_frame.grid(row=0, column=0, sticky="nsew")
+        about_frame.columnconfigure(0, weight=1)
+
+        about_heading = register_font(tk.Label(
+            about_frame,
+            text="About Me",
+            font=("IBM Plex Mono", 18),
+            justify=tk.CENTER,
+        ), 18)
+        about_heading.grid(row=0, column=0, pady=(0, 8))
+
+        register_font(tk.Label(
+            about_frame,
+            text="I am Kavi Mistry - Maker/Hobbyist  :)",
+            font=("IBM Plex Mono", 13),
+            justify=tk.CENTER,
+        ), 13).grid(row=1, column=0, pady=(0, 20))
+
+        for row, title, details in (
+            (2, "A little about me,", "I am alive (can you believe it!) and creating projects with Hackclub. I saw the Terra project (https://terra.hackclub.com) and decided to join it and this project was created for that reason. Still in school tho :( "),
+            (4, "Interests", "I like making things  >:) such as little projects like these. I quite like coding and making things that other people will enjoy  :) "),
+            (6, "Get in touch", "Click the 'Contact Me' button on the top menu to open a Mailto: link to my email address. You could also check out my GitHub at https://github.com/sadgituser and see my upcoming projects on there!"),
+        ):
+            register_font(tk.Label(
+                about_frame,
+                text=title,
+                font=("IBM Plex Mono", 11),
+                anchor="w",
+                justify=tk.LEFT,
+            ), 11).grid(row=row, column=0, sticky="ew", pady=(8, 2))
+            details_label = register_font(tk.Label(
+                about_frame,
+                text=details,
+                font=("IBM Plex Mono", 10),
+                anchor="w",
+                justify=tk.LEFT,
+                wraplength=400,
+            ), 10)
+            details_label.grid(row=row + 1, column=0, sticky="ew")
+            details_label.bind(
+                "<Configure>",
+                lambda event: event.widget.configure(
+                    wraplength=max(180, event.width - 16)
+                ),
+            )
+
+        register_font(tk.Button(
+            about_frame,
+            text="Close",
+            command=close_about_page,
+            font=("IBM Plex Mono", 10),
+        ), 10).grid(row=8, column=0, sticky="ew", pady=(24, 0))
+
+        apply_theme()
+        apply_text_size()
+
+    def close_about_page():
+        nonlocal about_window, about_heading
+        if about_window is not None:
+            about_window.destroy()
+            about_window = None
+            about_heading = None
+
+
     help_menu = tk.Menu(menu, tearoff=0)
     menu.add_cascade(label="Help", menu=help_menu)
     theme_menus.append(help_menu)
     help_menu.add_command(
         label="About the Project",
-        command=lambda: open_new_tab(
-            "https://github.com/kavim/python-random-password-generator"
-        ),
+        command=infopage,
     )
     help_menu.add_command(
-        label="Contact Me",
+        label="Contact Me (Your Default Email Service will be Opened)",
         command=lambda: open_new_tab("mailto:kavi@mistrypi.dev"),
     )
 
@@ -850,6 +985,8 @@ def main():
         close_settings(save=False)
         if rainbow_after_id is not None:
             root.after_cancel(rainbow_after_id)
+        if password_animation_after_id is not None:
+            root.after_cancel(password_animation_after_id)
         persist_settings()
         root.destroy()
 
