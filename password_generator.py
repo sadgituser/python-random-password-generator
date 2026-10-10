@@ -318,9 +318,9 @@ def main():
             )
         if about_window is not None and about_window.winfo_exists():
             dimensions = {
-                "Standard": "520x480",
-                "Large": "590x540",
-                "Extra large": "650x600",
+                "Standard": "520x640",
+                "Large": "590x700",
+                "Extra large": "650x760",
             }
             about_window.geometry(dimensions[text_size_variable.get()])
 
@@ -362,6 +362,17 @@ def main():
                         bg=colors["surface"],
                         fg=colors["text"],
                         insertbackground=colors["accent"],
+                    )
+                elif widget_class == "Canvas":
+                    widget.configure(
+                        bg=colors["background"],
+                        highlightbackground=colors["background"],
+                    )
+                elif widget_class == "Scrollbar":
+                    widget.configure(
+                        bg=colors["surface"],
+                        troughcolor=colors["background"],
+                        activebackground=colors["accent"],
                     )
                 elif widget_class == "Scale":
                     widget.configure(
@@ -918,7 +929,7 @@ def main():
 
         about_window = tk.Toplevel(root)
         about_window.title("About Me")
-        about_window.geometry("520x480+50+50")
+        about_window.geometry("520x640+50+50")
         about_window.minsize(400, 360)
         about_window.transient(root)
         about_window.columnconfigure(0, weight=1)
@@ -928,9 +939,59 @@ def main():
             close_about_page,
         )
 
-        about_frame = tk.Frame(about_window, padx=28, pady=24)
-        about_frame.grid(row=0, column=0, sticky="nsew")
+        about_content = tk.Frame(about_window)
+        about_content.grid(row=0, column=0, sticky="nsew")
+        about_content.columnconfigure(0, weight=1)
+        about_content.rowconfigure(0, weight=1)
+
+        about_canvas = tk.Canvas(about_content, highlightthickness=0)
+        about_canvas.grid(row=0, column=0, sticky="nsew")
+        about_scrollbar = tk.Scrollbar(
+            about_content,
+            orient=tk.VERTICAL,
+            command=about_canvas.yview,
+        )
+        about_scrollbar.grid(row=0, column=1, sticky="ns")
+        about_canvas.configure(yscrollcommand=about_scrollbar.set)
+
+        about_frame = tk.Frame(about_canvas, padx=28, pady=24)
         about_frame.columnconfigure(0, weight=1)
+        about_canvas_window = about_canvas.create_window(
+            (0, 0),
+            window=about_frame,
+            anchor="nw",
+        )
+        about_frame.bind(
+            "<Configure>",
+            lambda event: about_canvas.configure(
+                scrollregion=about_canvas.bbox("all")
+            ),
+        )
+        about_canvas.bind(
+            "<Configure>",
+            lambda event: about_canvas.itemconfigure(
+                about_canvas_window,
+                width=event.width,
+            ),
+        )
+
+        assets_directory = Path(__file__).resolve().parent / "Assets"
+        try:
+            etsy_image = tk.PhotoImage(
+                file=str(assets_directory / "photo7.png")
+            )
+            hackclub_image = tk.PhotoImage(
+                file=str(assets_directory / "photo5.png")
+            ).subsample(2, 2)
+        except tk.TclError as error:
+            messagebox.showerror(
+                "Could not load About Me images",
+                f"The About Me images could not be loaded from:\n"
+                f"{assets_directory}\n\n{error}",
+                parent=about_window,
+            )
+            close_about_page()
+            return
 
         about_heading = register_font(tk.Label(
             about_frame,
@@ -939,7 +1000,6 @@ def main():
             justify=tk.CENTER,
         ), 18)
         about_heading.grid(row=0, column=0, pady=(0, 8))
-
         register_font(tk.Label(
             about_frame,
             text="I am Kavi Mistry - Maker/Hobbyist  :)",
@@ -947,10 +1007,10 @@ def main():
             justify=tk.CENTER,
         ), 13).grid(row=1, column=0, pady=(0, 20))
 
-        for row, title, details in (
-            (2, "A little about me,", "I am alive (can you believe it!) and creating projects with Hackclub. I saw the Terra project (https://terra.hackclub.com) and decided to join it and this project was created for that reason. Still in school tho :( "),
-            (4, "Interests", "I like making things  >:) such as little projects like these. I quite like coding and making things that other people will enjoy  :) "),
-            (6, "Get in touch", "Click the 'Contact Me' button on the top menu to open a Mailto: link to my email address. You could also check out my GitHub at https://github.com/sadgituser and see my upcoming projects on there!"),
+        row = 2
+        for title, details in (
+            ("A little about me,", "I am alive (can you believe it!) and creating projects with Hackclub. I saw the Terra project (https://terra.hackclub.com) and decided to join it and this project was created for that reason. Still in school tho :( "),
+            ("Interests", "I like making things  >:) such as little projects like these. I quite like coding and making things that other people will enjoy  :) "),
         ):
             register_font(tk.Label(
                 about_frame,
@@ -974,13 +1034,107 @@ def main():
                     wraplength=max(180, event.width - 16)
                 ),
             )
+            row += 2
+
+        register_font(tk.Label(
+            about_frame,
+            text="My Etsy shop",
+            font=("IBM Plex Mono", 11),
+            anchor="w",
+            justify=tk.LEFT,
+        ), 11).grid(row=row, column=0, sticky="ew", pady=(8, 2))
+        row += 1
+
+        etsy_image_button = tk.Button(
+            about_frame,
+            image=etsy_image,
+            text="Visit my Etsy shop",
+            compound=tk.TOP,
+            command=lambda: open_new_tab(
+                "https://theprintedcraftuk.etsy.com"
+            ),
+            cursor="hand2",
+            relief=tk.FLAT,
+            padx=8,
+            pady=6,
+        )
+        etsy_image_button.image = etsy_image
+        etsy_image_button.grid(row=row, column=0, pady=(0, 6))
+        row += 1
+
+        etsy_details = register_font(tk.Label(
+            about_frame,
+            text=(
+                "This is my Etsy shop where I sell some of my 3D Printed "
+                "Items. (I am a small struggling business so come and check "
+                "me out!)"
+            ),
+            font=("IBM Plex Mono", 10),
+            anchor="w",
+            justify=tk.LEFT,
+            wraplength=400,
+        ), 10)
+        etsy_details.grid(row=row, column=0, sticky="ew")
+        etsy_details.bind(
+            "<Configure>",
+            lambda event: event.widget.configure(
+                wraplength=max(180, event.width - 16)
+            ),
+        )
+        row += 1
+
+        title = "Get in touch"
+        details = (
+            "Click the 'Contact Me' button on the top menu to open a Mailto: "
+            "link to my email address. You could also check out my GitHub at "
+            "https://github.com/sadgituser and see my upcoming projects on "
+            "there!"
+        )
+        register_font(tk.Label(
+            about_frame,
+            text=title,
+            font=("IBM Plex Mono", 11),
+            anchor="w",
+            justify=tk.LEFT,
+        ), 11).grid(row=row, column=0, sticky="ew", pady=(8, 2))
+        details_label = register_font(tk.Label(
+            about_frame,
+            text=details,
+            font=("IBM Plex Mono", 10),
+            anchor="w",
+            justify=tk.LEFT,
+            wraplength=400,
+        ), 10)
+        details_label.grid(row=row + 1, column=0, sticky="ew")
+        details_label.bind(
+            "<Configure>",
+            lambda event: event.widget.configure(
+                wraplength=max(180, event.width - 16)
+            ),
+        )
+        row += 2
+
+        hackclub_image_button = tk.Button(
+            about_frame,
+            image=hackclub_image,
+            text="Visit Hack Club",
+            compound=tk.TOP,
+            command=lambda: open_new_tab("https://hackclub.com"),
+            cursor="hand2",
+            relief=tk.FLAT,
+            padx=8,
+            pady=6,
+        )
+        hackclub_image_button.image = hackclub_image
+        hackclub_image_button.grid(row=row, column=0, pady=(16, 0))
+        row += 1
 
         register_font(tk.Button(
             about_frame,
             text="Close",
             command=close_about_page,
             font=("IBM Plex Mono", 10),
-        ), 10).grid(row=8, column=0, sticky="ew", pady=(24, 0))
+        ), 10).grid(row=row, column=0, sticky="ew", pady=(16, 0))
 
         apply_theme()
         apply_text_size()
