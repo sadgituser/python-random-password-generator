@@ -453,6 +453,16 @@ def main():
         text_size_variable.set(selection)
         apply_text_size()
 
+    def randomise_settings():
+        length_variable.set(random.randint(1, 32))
+        uppercase_variable.set(random.choice((True, False)))
+        numbers_variable.set(random.choice((True, False)))
+        special_variable.set(random.choice((True, False)))
+        theme_variable.set(random.choice(tuple(THEMES)))
+        rainbow_variable.set(random.choice((True, False)))
+        apply_saved_theme()
+        toggle_rainbow()
+
     main_frame = tk.Frame(root, bg="#000000", padx=24, pady=24)
     main_frame.grid(row=0, column=0, sticky="nsew")
     main_frame.columnconfigure(0, weight=1)
@@ -520,7 +530,7 @@ def main():
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "0123456789!@#$%^&*"
         )
-        animation_frames = random.randint(0, 100)
+        animation_frames = random.randint(50, 150)
         animation_frame = 0
 
         copy_button.configure(state=tk.DISABLED)
@@ -554,6 +564,7 @@ def main():
 
         animate_password()
 
+
     generate_button = register_font(tk.Button(
         main_frame,
         text="Generate Password",
@@ -568,6 +579,8 @@ def main():
         sticky="ew",
         pady=(16, 0),
     )
+
+    root.bind_all("<Enter>", lambda event: generate_button.invoke())
 
     apply_saved_theme()
     apply_text_size()
@@ -709,13 +722,24 @@ def main():
                 anchor="w",
             ), 10).grid(row=row, column=0, sticky="ew")
 
+        actions_frame = tk.Frame(settings_frame, bg="#000000")
+        actions_frame.grid(row=8, column=0, sticky="ew", pady=(18, 0))
+        actions_frame.columnconfigure(0, weight=1)
+        actions_frame.columnconfigure(1, weight=1)
         register_font(tk.Button(
-            settings_frame,
+            actions_frame,
+            text="Randomise Settings",
+            command=randomise_settings,
+            bg="#000000",
+            font=("IBM Plex Mono", 10),
+        ), 10).grid(row=0, column=0, sticky="ew", padx=(0, 4))
+        register_font(tk.Button(
+            actions_frame,
             text="Save Settings",
             command=lambda: persist_settings(show_confirmation=True),
             bg="#000000",
             font=("IBM Plex Mono", 10),
-        ), 10).grid(row=8, column=0, sticky="ew", pady=(18, 0))
+        ), 10).grid(row=0, column=1, sticky="ew", padx=(4, 0))
 
         register_font(tk.Label(
             settings_frame,
@@ -1000,10 +1024,8 @@ def main():
     if rainbow_variable.get():
         toggle_rainbow()
     prompt_generate_password()
-    prompt_generate_password
     root.mainloop()
 
 
 if __name__ == "__main__":
     main()
-
