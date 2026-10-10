@@ -981,6 +981,10 @@ def main():
         command=lambda: open_new_tab("mailto:kavi@mistrypi.dev"),
     )
 
+    def prompt_generate_password():
+        tk.messagebox.showwarning(title="Password?", message="Are you going to generate a password? If not then CLOSE ME!!")
+        root.after(random.randint(60000, 600000), prompt_generate_password)
+
     def close_application():
         close_settings(save=False)
         if rainbow_after_id is not None:
@@ -995,8 +999,11 @@ def main():
     apply_text_size()
     if rainbow_variable.get():
         toggle_rainbow()
+    prompt_generate_password()
+    prompt_generate_password
     root.mainloop()
 
 
 if __name__ == "__main__":
     main()
+
