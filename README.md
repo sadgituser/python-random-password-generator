@@ -12,7 +12,7 @@ A customizable desktop password generator built using Python and Tkinter.
 
 ## Usage
 
-Launch `password_generator.exe` from the path **dist > password_generator.exe**. Go to **Settings > Password Generation Settings** to configure your password length, character options, or add a custom word/phrase to include. Click **Generate Password** to create one. If your custom phrase exceeds the chosen length, the password will automatically expand to fit it. You can copy the generated password straight to your clipboard with the **Copy** button.
+Launch `password_generator.exe` from the path **dist > password_generator.exe**. Go to **Settings > Password Generation Settings** to configure your password length, character options, or add a custom word/phrase to include, then click **Generate Password** on the main screen. If your custom phrase exceeds the chosen length, the password will automatically expand to fit it. You can copy the generated password straight to your clipboard with the **Copy** button.
 
 Your settings save automatically whenever you close the app or the settings window, though you can also force an immediate save via **Save Settings**. To back up or load specific setups, use **Options > Save Configuration** and **Options > Open Configuration** to export or import your settings as a JSON file.
 

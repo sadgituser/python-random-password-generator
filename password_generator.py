@@ -4,6 +4,7 @@ import os
 import random
 import tkinter as tk
 from pathlib import Path
+import playsound
 from tkinter import colorchooser, filedialog, messagebox
 from webbrowser import open_new_tab
 
@@ -80,16 +81,16 @@ ROOT_ICON_PATH = None
 SETTINGS_ICON_PATH = None
 
 DEFAULT_SETTINGS = {
-    "length": 16,
+    "length": 14,
     "use_uppercase": True,
     "use_numbers": True,
     "use_special": True,
     "memorable_text": "",
-    "theme": "Forest",
-    "background_color": THEMES["Forest"]["background"],
-    "text_color": THEMES["Forest"]["text"],
-    "accent_color": THEMES["Forest"]["accent"],
-    "surface_color": THEMES["Forest"]["surface"],
+    "theme": "Matrix Green",
+    "background_color": THEMES["Matrix Green"]["background"],
+    "text_color": THEMES["Matrix Green"]["text"],
+    "accent_color": THEMES["Matrix Green"]["accent"],
+    "surface_color": THEMES["Matrix Green"]["surface"],
     "rainbow_mode": False,
     "text_size": "Standard",
 }
@@ -155,7 +156,7 @@ def validate_settings(data):
 
     theme = data.get("theme", DEFAULT_SETTINGS["theme"])
     if not isinstance(theme, str) or theme not in (*THEMES, "Custom"):
-        raise ValueError("'theme' must be Forest, Ocean, Light, or Custom.")
+        raise ValueError("'theme' must be Forest, Ocean, Light, Matrix Colours, Desert or Custom.")
     settings["theme"] = theme
 
     for key in ("background_color", "text_color", "accent_color", "surface_color"):
@@ -175,7 +176,6 @@ def validate_settings(data):
 
 
 def make_logo_icon(kind):
-    """Draw a small built-in icon so the app has no image-file dependency."""
     image = tk.PhotoImage(width=32, height=32)
     background = "#101820"
     accent = "#83C9A5"
@@ -241,7 +241,7 @@ def write_settings(path, settings):
 
 def main():
     root = tk.Tk()
-    root.title("Password Generator")
+    root.title("Python Password Generator")
     root.geometry("520x280+300+200")
     root.minsize(360, 220)
     root.columnconfigure(0, weight=1)
@@ -449,7 +449,7 @@ def main():
 
     heading = register_font(tk.Label(
         main_frame,
-        text="Your password:",
+        text="Your password is:",
         bg="#000000",
         font=("IBM Plex Mono", 16),
     ), 16)
@@ -458,7 +458,7 @@ def main():
     generated_password = tk.StringVar()
     password_label = register_font(tk.Label(
         main_frame,
-        text="Open Settings to choose options and generate a password.",
+        text="Open Settings to choose password options.",
         bg="#000000",
         font=("IBM Plex Mono", 14),
         wraplength=460,
@@ -494,6 +494,27 @@ def main():
         font=("IBM Plex Mono", 10),
     ), 10)
     copy_button.grid(row=1, column=1, padx=(12, 0))
+
+    def generate_password():
+        generated_password.set(
+            genpass(
+                length_variable.get(),
+                uppercase_variable.get(),
+                numbers_variable.get(),
+                special_variable.get(),
+                memorable_text_variable.get(),
+            )
+        )
+        password_label.configure(textvariable=generated_password)
+        copy_button.configure(state=tk.NORMAL)
+
+    register_font(tk.Button(
+        main_frame,
+        text="Generate Password",
+        command=generate_password,
+        bg="#000000",
+        font=("IBM Plex Mono", 12),
+    ), 12).grid(row=2, column=0, columnspan=2, sticky="ew", pady=(16, 0))
 
     apply_saved_theme()
     apply_text_size()
@@ -532,19 +553,6 @@ def main():
                 parent=root,
             )
         return True
-
-    def generate_password():
-        generated_password.set(
-            genpass(
-                length_variable.get(),
-                uppercase_variable.get(),
-                numbers_variable.get(),
-                special_variable.get(),
-                memorable_text_variable.get(),
-            )
-        )
-        password_label.configure(textvariable=generated_password)
-        copy_button.configure(state=tk.NORMAL)
 
     def close_settings(save=True):
         nonlocal settings_window
@@ -650,39 +658,31 @@ def main():
 
         register_font(tk.Button(
             settings_frame,
-            text="Generate Password",
-            command=generate_password,
-            bg="#000000",
-            font=("IBM Plex Mono", 12),
-        ), 12).grid(row=8, column=0, sticky="ew", pady=(18, 8))
-
-        register_font(tk.Button(
-            settings_frame,
             text="Save Settings",
             command=lambda: persist_settings(show_confirmation=True),
             bg="#000000",
             font=("IBM Plex Mono", 10),
-        ), 10).grid(row=9, column=0, sticky="ew")
+        ), 10).grid(row=8, column=0, sticky="ew", pady=(18, 0))
 
         register_font(tk.Label(
             settings_frame,
             text="Settings are also saved when you close this window.",
             bg="#000000",
             font=("IBM Plex Mono", 8),
-        ), 8).grid(row=10, column=0, pady=(10, 0))
+        ), 8).grid(row=9, column=0, pady=(10, 0))
 
         tk.Frame(
             settings_frame,
             height=2,
             bg="#333333",
-        ).grid(row=11, column=0, sticky="ew", pady=(16, 10))
+        ).grid(row=10, column=0, sticky="ew", pady=(16, 10))
 
         register_font(tk.Label(
             settings_frame,
             text="Appearance",
             bg="#000000",
             font=("IBM Plex Mono", 13),
-        ), 13).grid(row=12, column=0, sticky="w", pady=(0, 6))
+        ), 13).grid(row=11, column=0, sticky="w", pady=(0, 6))
 
         theme_menu = tk.OptionMenu(
             settings_frame,
@@ -693,11 +693,11 @@ def main():
         )
         register_font(theme_menu, 10)
         register_font(theme_menu["menu"], 10)
-        theme_menu.grid(row=13, column=0, sticky="ew")
+        theme_menu.grid(row=12, column=0, sticky="ew")
         theme_menus.append(theme_menu["menu"])
 
         color_frame = tk.Frame(settings_frame, bg="#000000")
-        color_frame.grid(row=14, column=0, sticky="ew", pady=(8, 4))
+        color_frame.grid(row=13, column=0, sticky="ew", pady=(8, 4))
         for column in range(2):
             color_frame.columnconfigure(column, weight=1)
         for row, label, variable in (
@@ -719,7 +719,7 @@ def main():
             ), 9).grid(row=row, column=column, sticky="ew", padx=3, pady=3)
 
         size_frame = tk.Frame(settings_frame, bg="#000000")
-        size_frame.grid(row=15, column=0, sticky="ew", pady=(5, 0))
+        size_frame.grid(row=14, column=0, sticky="ew", pady=(5, 0))
         size_frame.columnconfigure(1, weight=1)
         register_font(tk.Label(
             size_frame,
@@ -746,7 +746,7 @@ def main():
             bg="#000000",
             font=("IBM Plex Mono", 10),
             anchor="w",
-        ), 10).grid(row=16, column=0, sticky="ew", pady=(8, 0))
+        ), 10).grid(row=15, column=0, sticky="ew", pady=(8, 0))
 
         apply_theme()
         apply_text_size()
